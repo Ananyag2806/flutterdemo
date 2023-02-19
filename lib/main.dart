@@ -1,122 +1,53 @@
-import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(const ScrumBoard());
+import 'board.dart';
+import 'insights.dart';
+import 'profile.dart';
 
-class ScrumBoard extends StatefulWidget {
-  const ScrumBoard({Key? key}) : super(key: key);
+void main() => runApp(const HomePage());
 
-  @override
-  State createState() => _ScrumBoard();
-}
-
-class InnerList {
-  final String name;
-  List<String> children;
-  InnerList({required this.name, required this.children});
-}
-
-class _ScrumBoard extends State<ScrumBoard> {
-  late List<InnerList> _lists;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  void initState() {
-    super.initState();
+  _HomePageState createState() => _HomePageState();
+}
 
-    _lists = List.generate(9, (outerIndex) {
-      return InnerList(
-        name: outerIndex.toString(),
-        children: List.generate(12, (innerIndex) => '$outerIndex.$innerIndex'),
-      );
-    });
-  }
+class _HomePageState extends State<HomePage> {
+  int selectedPage = 0;
+
+  final _pageOptions = [
+    const ScrumBoard(),
+    const Insights(),
+    const Profile(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         home: Scaffold(
-      appBar: AppBar(
-        title: const Text('Scrum4Everyday'),
-      ),
-      body: DragAndDropLists(
-        children: List.generate(_lists.length, (index) => _buildList(index)),
-        onItemReorder: _onItemReorder,
-        onListReorder: _onListReorder,
-        axis: Axis.horizontal,
-        listWidth: 330,
-        listDraggingWidth: 330,
-        listDecoration: const BoxDecoration(
-          color: Color(0xFF483838),
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black45,
-              spreadRadius: 3.0,
-              blurRadius: 6.0,
-              offset: Offset(2, 3),
-            ),
-          ],
-        ),
-        listPadding: const EdgeInsets.all(8.0),
-      ),
-    ));
-  }
-
-  _buildList(int outerIndex) {
-    var innerList = _lists[outerIndex];
-    return DragAndDropList(
-      children: List.generate(innerList.children.length,
-          (index) => _buildItem(innerList.children[index])),
-    );
-  }
-
-  _buildItem(String item) {
-    return DragAndDropItem(
-      child: Container(
-        height: 50,
-        margin: const EdgeInsets.all(8.0),
-        decoration: const BoxDecoration(
-          color: Color(0xFF483838),
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black45,
-              spreadRadius: 3.0,
-              blurRadius: 6.0,
-              offset: Offset(2, 3),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            item,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20.0,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  _onItemReorder(
-      int oldItemIndex, int oldListIndex, int newItemIndex, int newListIndex) {
-    setState(() {
-      var movedItem = _lists[oldListIndex].children.removeAt(oldItemIndex);
-      _lists[newListIndex].children.insert(newItemIndex, movedItem);
-    });
-  }
-
-  _onListReorder(int oldListIndex, int newListIndex) {
-    setState(() {
-      var movedList = _lists.removeAt(oldListIndex);
-      _lists.insert(newListIndex, movedList);
-    });
+            backgroundColor: Colors.white,
+            body: _pageOptions[selectedPage],
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.dashboard, size: 30), label: 'Board'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.insights, size: 30), label: 'Insights'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.account_circle, size: 30),
+                    label: 'Profile'),
+              ],
+              selectedItemColor: Colors.green,
+              elevation: 5.0,
+              unselectedItemColor: Colors.green[900],
+              currentIndex: selectedPage,
+              backgroundColor: Colors.white,
+              onTap: (index) {
+                setState(() {
+                  selectedPage = index;
+                });
+              },
+            )));
   }
 }
-
-// black list color : 0xFF483838
-// text color : 
-// green background color:
-// green app bar color
