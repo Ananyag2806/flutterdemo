@@ -1,6 +1,7 @@
 import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
-import 'AddCard.dart';
+import 'SQLHealper.dart';
+import 'dart:convert';
 
 class ScrumBoard extends StatefulWidget {
   const ScrumBoard({Key? key}) : super(key: key);
@@ -15,30 +16,65 @@ class InnerList {
   InnerList({required this.name, required this.children});
 }
 
+List storiesTb = [];
+List tasksTb = [];
+List todayTb = [];
+List inProgTb = [];
+List doneTb = [];
+bool isLoading = true;
+
+List<List> tables = [storiesTb, tasksTb, todayTb, inProgTb, doneTb];
+
 class _ScrumBoard extends State<ScrumBoard> {
   late List<InnerList> _lists;
+
+  void refreshJournals() async {
+    final stories = await SQLHelper.getStories();
+    final tasks = await SQLHelper.getTasks();
+    final today = await SQLHelper.getToday();
+    final inProg = await SQLHelper.getInProg();
+    final done = await SQLHelper.getDone();
+
+    final tempStories = stories.map((item) => item.values.toList()).toList();
+    final tempTasks = tasks.map((item) => item.values.toList()).toList();
+    final tempToday = today.map((item) => item.values.toList()).toList();
+    final tempInProg = inProg.map((item) => item.values.toList()).toList();
+    final tempDone = done.map((item) => item.values.toList()).toList();
+
+    setState(() {
+      storiesTb = tempStories;
+      tasksTb = tempTasks;
+      todayTb = tempToday;
+      inProgTb = tempInProg;
+      doneTb = tempDone;
+      isLoading = false;
+    });
+    // print(storiesTb); // prints the first title
+    // print(tasksTb);
+    print(tables[0].length);
+
+    List<String> headers = ['Stories', 'Tasks', 'Today', 'In Progress', 'Done'];
+
+    _lists = List.generate(headers.length, (outerIndex) {
+      return InnerList(
+        name: headers[outerIndex],
+        children: List.generate(tables[outerIndex].length,
+            (innerIndex) => tables[outerIndex][innerIndex][1]),
+      );
+    });
+  }
 
   @override
   void initState() {
     super.initState();
 
-    List<String> headers = ['Stories', 'Tasks', 'Today', 'In Progress', 'Done'];
-    List<List<String>> data = [
-      ['plan something with krish', 'message Manvi', 'what about itr'],
-      ['call krish', 'message Manvi', 'call daddy about itr'],
-      ['wash clothes', 'clean room'],
-      ['fill form', 'code'],
-      ['nothing', 'nothing', 'nothing']
-    ];
-
-    _lists = List.generate(headers.length, (outerIndex) {
-      return InnerList(
-        name: headers[outerIndex],
-        children: List.generate(data[outerIndex].length,
-            (innerIndex) => data[outerIndex][innerIndex]),
-      );
-    });
+    refreshJournals();
   }
+
+  // data format
+  // [[1, fo tasks, 2023-04-14 18:35:54], [2, tasks, 2023-04-14 18:39:34]]
+
+  final TextEditingController textController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -48,33 +84,37 @@ class _ScrumBoard extends State<ScrumBoard> {
       appBar: AppBar(
         title: const Text('Scrum4Everyday'),
       ),
-      body: DragAndDropLists(
-        children: List.generate(_lists.length, (index) => _buildList(index)),
-        onItemReorder: _onItemReorder,
-        onListReorder: _onListReorder,
-        axis: Axis.horizontal,
-        listWidth: 330,
-        listDraggingWidth: 330,
-        listDecoration: const BoxDecoration(
-          color: Color(0xFF483838),
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black45,
-              spreadRadius: 3.0,
-              blurRadius: 6.0,
-              offset: Offset(2, 3),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : DragAndDropLists(
+              children:
+                  List.generate(_lists.length, (index) => _buildList(index)),
+              onItemReorder: _onItemReorder,
+              onListReorder: _onListReorder,
+              axis: Axis.horizontal,
+              listWidth: 330,
+              listDraggingWidth: 330,
+              listDecoration: const BoxDecoration(
+                color: Color(0xFF483838),
+                borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Colors.black45,
+                    spreadRadius: 3.0,
+                    blurRadius: 6.0,
+                    offset: Offset(2, 3),
+                  ),
+                ],
+              ),
+              listPadding: const EdgeInsets.all(8.0),
             ),
-          ],
-        ),
-        listPadding: const EdgeInsets.all(8.0),
-      ),
     ));
   }
 
   _buildList(int outerIndex) {
     var innerList = _lists[outerIndex];
-    TextEditingController textController = TextEditingController();
 
     return DragAndDropList(
         header: Row(
@@ -127,8 +167,9 @@ class _ScrumBoard extends State<ScrumBoard> {
               IconButton(
                 onPressed: () {
                   if (textController.text.isNotEmpty) {
-                    setState(() {
+                    setState(() async {
                       _lists[outerIndex].children.add(textController.text);
+                      await addItem(outerIndex);
                     });
                     textController.clear();
                   }
@@ -138,6 +179,13 @@ class _ScrumBoard extends State<ScrumBoard> {
             ],
           ),
         ));
+  }
+
+  // Insert a new journal to the database
+  Future<void> addItem(index) async {
+    const tables = ['stories', 'tasks', 'today', 'inProg', 'done'];
+    await SQLHelper.createItem(tables[index], textController.text);
+    refreshJournals();
   }
 
   _buildItem(String item) {
@@ -186,8 +234,7 @@ class _ScrumBoard extends State<ScrumBoard> {
   }
 }
 
-
 // black list color : 0xFF483838
-// text color : 
+// text color :
 // green background color:
 // green app bar color
