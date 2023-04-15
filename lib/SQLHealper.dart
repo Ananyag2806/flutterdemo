@@ -60,6 +60,15 @@ class SQLHelper {
     return id;
   }
 
+  // Empty table before inserting
+  static Future<int> emptyTable(String tblName) async {
+    final db = await SQLHelper.db();
+
+    await db.delete(tblName);
+
+    return 1;
+  }
+
   // Create new item (journal)
   static Future<int> addItems(String tblName, List<String> items) async {
     final db = await SQLHelper.db();

@@ -1,7 +1,6 @@
 import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
 import 'SQLHealper.dart';
-import 'dart:convert';
 
 class ScrumBoard extends StatefulWidget {
   const ScrumBoard({Key? key}) : super(key: key);
@@ -29,6 +28,7 @@ class _ScrumBoard extends State<ScrumBoard> {
   late List<InnerList> _lists;
 
   void refreshJournals() async {
+    print('refreshing');
     final stories = await SQLHelper.getStories();
     final tasks = await SQLHelper.getTasks();
     final today = await SQLHelper.getToday();
@@ -47,11 +47,13 @@ class _ScrumBoard extends State<ScrumBoard> {
       todayTb = tempToday;
       inProgTb = tempInProg;
       doneTb = tempDone;
+      tables[0] = storiesTb;
       isLoading = false;
     });
-    // print(storiesTb); // prints the first title
+    print(storiesTb); // prints the first title
     // print(tasksTb);
-    print(tables[0].length);
+    print(tables[0]);
+    // print(storiesTb.length);
 
     List<String> headers = ['Stories', 'Tasks', 'Today', 'In Progress', 'Done'];
 
@@ -67,8 +69,31 @@ class _ScrumBoard extends State<ScrumBoard> {
   @override
   void initState() {
     super.initState();
-
     refreshJournals();
+  }
+
+  @override
+  void dispose() {
+    addAllItems(); // Call your function here when the page is disposed
+    isLoading = true;
+    super.dispose();
+  }
+
+  Future<bool> _onWillPop() async {
+    isLoading = true;
+    addAllItems(); // Call your function here when the user tries to leave the page
+    return true;
+  }
+
+  void addAllItems() async {
+    print(_lists[0].children);
+
+    List<String> temp;
+
+    temp = _lists[0].children;
+    print(temp);
+    await SQLHelper.emptyTable('stories');
+    print(await SQLHelper.addItems('stories', temp));
   }
 
   // data format
@@ -80,45 +105,40 @@ class _ScrumBoard extends State<ScrumBoard> {
   Widget build(BuildContext context) {
     // print(_lists[0].children);
     return WillPopScope(
-      child: MaterialApp(
-          home: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: const Text('Scrum4Everyday'),
-        ),
-        body: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : DragAndDropLists(
-                children:
-                    List.generate(_lists.length, (index) => _buildList(index)),
-                onItemReorder: _onItemReorder,
-                onListReorder: _onListReorder,
-                axis: Axis.horizontal,
-                listWidth: 330,
-                listDraggingWidth: 330,
-                listDecoration: const BoxDecoration(
-                  color: Color(0xFF483838),
-                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: Colors.black45,
-                      spreadRadius: 3.0,
-                      blurRadius: 6.0,
-                      offset: Offset(2, 3),
-                    ),
-                  ],
+        onWillPop: _onWillPop,
+        child: MaterialApp(
+            home: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            title: const Text('Scrum4Everyday'),
+          ),
+          body: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : DragAndDropLists(
+                  children: List.generate(
+                      _lists.length, (index) => _buildList(index)),
+                  onItemReorder: _onItemReorder,
+                  onListReorder: _onListReorder,
+                  axis: Axis.horizontal,
+                  listWidth: 330,
+                  listDraggingWidth: 330,
+                  listDecoration: const BoxDecoration(
+                    color: Color(0xFF483838),
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black45,
+                        spreadRadius: 3.0,
+                        blurRadius: 6.0,
+                        offset: Offset(2, 3),
+                      ),
+                    ],
+                  ),
+                  listPadding: const EdgeInsets.all(8.0),
                 ),
-                listPadding: const EdgeInsets.all(8.0),
-              ),
-      )),
-      onWillPop: () async {
-        // addItem(); // call the addItem function
-        addAllItems();
-        return true; // allow the user to exit the page
-      },
-    );
+        )));
   }
 
   _buildList(int outerIndex) {
@@ -238,10 +258,6 @@ class _ScrumBoard extends State<ScrumBoard> {
       var movedList = _lists.removeAt(oldListIndex);
       _lists.insert(newListIndex, movedList);
     });
-  }
-
-  void addAllItems() {
-    print(_lists[0].children);
   }
 }
 

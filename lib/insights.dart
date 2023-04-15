@@ -5,7 +5,10 @@ class Insights extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return Container(
+      child: const Center(
+        child: Text('Insights'),
+      ),
+    );
   }
 }
