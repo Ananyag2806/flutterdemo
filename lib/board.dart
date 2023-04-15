@@ -78,39 +78,47 @@ class _ScrumBoard extends State<ScrumBoard> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: const Text('Scrum4Everyday'),
-      ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : DragAndDropLists(
-              children:
-                  List.generate(_lists.length, (index) => _buildList(index)),
-              onItemReorder: _onItemReorder,
-              onListReorder: _onListReorder,
-              axis: Axis.horizontal,
-              listWidth: 330,
-              listDraggingWidth: 330,
-              listDecoration: const BoxDecoration(
-                color: Color(0xFF483838),
-                borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black45,
-                    spreadRadius: 3.0,
-                    blurRadius: 6.0,
-                    offset: Offset(2, 3),
-                  ),
-                ],
+    // print(_lists[0].children);
+    return WillPopScope(
+      child: MaterialApp(
+          home: Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text('Scrum4Everyday'),
+        ),
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : DragAndDropLists(
+                children:
+                    List.generate(_lists.length, (index) => _buildList(index)),
+                onItemReorder: _onItemReorder,
+                onListReorder: _onListReorder,
+                axis: Axis.horizontal,
+                listWidth: 330,
+                listDraggingWidth: 330,
+                listDecoration: const BoxDecoration(
+                  color: Color(0xFF483838),
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Colors.black45,
+                      spreadRadius: 3.0,
+                      blurRadius: 6.0,
+                      offset: Offset(2, 3),
+                    ),
+                  ],
+                ),
+                listPadding: const EdgeInsets.all(8.0),
               ),
-              listPadding: const EdgeInsets.all(8.0),
-            ),
-    ));
+      )),
+      onWillPop: () async {
+        // addItem(); // call the addItem function
+        addAllItems();
+        return true; // allow the user to exit the page
+      },
+    );
   }
 
   _buildList(int outerIndex) {
@@ -167,9 +175,8 @@ class _ScrumBoard extends State<ScrumBoard> {
               IconButton(
                 onPressed: () {
                   if (textController.text.isNotEmpty) {
-                    setState(() async {
+                    setState(() {
                       _lists[outerIndex].children.add(textController.text);
-                      await addItem(outerIndex);
                     });
                     textController.clear();
                   }
@@ -231,6 +238,10 @@ class _ScrumBoard extends State<ScrumBoard> {
       var movedList = _lists.removeAt(oldListIndex);
       _lists.insert(newListIndex, movedList);
     });
+  }
+
+  void addAllItems() {
+    print(_lists[0].children);
   }
 }
 

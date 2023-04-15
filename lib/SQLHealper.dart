@@ -60,6 +60,18 @@ class SQLHelper {
     return id;
   }
 
+  // Create new item (journal)
+  static Future<int> addItems(String tblName, List<String> items) async {
+    final db = await SQLHelper.db();
+
+    for (String item in items) {
+      final data = {'title': item};
+      await db.insert(tblName, data,
+          conflictAlgorithm: sql.ConflictAlgorithm.replace);
+    }
+    return 1;
+  }
+
   // Read all items from respective tables
   static Future<List<Map<String, dynamic>>> getStories() async {
     final db = await SQLHelper.db();
