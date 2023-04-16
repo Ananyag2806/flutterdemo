@@ -48,6 +48,10 @@ class _ScrumBoard extends State<ScrumBoard> {
       inProgTb = tempInProg;
       doneTb = tempDone;
       tables[0] = storiesTb;
+      tables[1] = tasksTb;
+      tables[2] = todayTb;
+      tables[3] = inProgTb;
+      tables[4] = doneTb;
       isLoading = false;
     });
     print(storiesTb); // prints the first title
@@ -94,6 +98,26 @@ class _ScrumBoard extends State<ScrumBoard> {
     print(temp);
     await SQLHelper.emptyTable('stories');
     print(await SQLHelper.addItems('stories', temp));
+
+    temp = _lists[1].children;
+    print(temp);
+    await SQLHelper.emptyTable('tasks');
+    print(await SQLHelper.addItems('tasks', temp));
+
+    temp = _lists[2].children;
+    print(temp);
+    await SQLHelper.emptyTable('today');
+    print(await SQLHelper.addItems('today', temp));
+
+    temp = _lists[3].children;
+    print(temp);
+    await SQLHelper.emptyTable('inProg');
+    print(await SQLHelper.addItems('inProg', temp));
+
+    temp = _lists[4].children;
+    print(temp);
+    await SQLHelper.emptyTable('done');
+    print(await SQLHelper.addItems('done', temp));
   }
 
   // data format
