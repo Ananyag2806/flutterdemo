@@ -132,9 +132,29 @@ class _ScrumBoard extends State<ScrumBoard> {
         onWillPop: _onWillPop,
         child: MaterialApp(
             home: Scaffold(
+          backgroundColor: const Color(0xFF083906),
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            title: const Text('Scrum4Everyday'),
+            backgroundColor: Color(0xFF135f05),
+            title: Row(
+              children: [
+                const Text(
+                  'Scrum Board',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Container(
+                    alignment: Alignment.centerRight,
+                    child: const Icon(
+                      Icons.show_chart,
+                      color: Color(0xFFFFFFFF),
+                    ))
+              ],
+            ),
           ),
           body: isLoading
               ? const Center(
@@ -149,7 +169,7 @@ class _ScrumBoard extends State<ScrumBoard> {
                   listWidth: 330,
                   listDraggingWidth: 330,
                   listDecoration: const BoxDecoration(
-                    color: Color(0xFF483838),
+                    color: Color(0xFF212121),
                     borderRadius: BorderRadius.all(Radius.circular(6.0)),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
@@ -176,13 +196,15 @@ class _ScrumBoard extends State<ScrumBoard> {
                 decoration: const BoxDecoration(
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(7.0)),
-                  color: Colors.pink,
+                  color: Color(0xFF212121),
                 ),
                 padding: const EdgeInsets.all(10),
-                child: Text(
-                  innerList.name,
-                  style: Theme.of(context).primaryTextTheme.titleLarge,
-                ),
+                child: Text(innerList.name,
+                    style: const TextStyle(
+                        color: Color(0xFF00A82D),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Montserrat')),
               ),
             ),
           ],
@@ -193,17 +215,8 @@ class _ScrumBoard extends State<ScrumBoard> {
           height: 50,
           margin: const EdgeInsets.all(8.0),
           decoration: const BoxDecoration(
-            color: Color(0xFF483838),
-            borderRadius: BorderRadius.all(Radius.circular(6.0)),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: Colors.black45,
-                spreadRadius: 3.0,
-                blurRadius: 6.0,
-                offset: Offset(2, 3),
-              ),
-            ],
-          ),
+              color: Color(0xFF212121),
+              borderRadius: BorderRadius.all(Radius.circular(6.0))),
           child: Row(
             children: [
               Expanded(
@@ -211,6 +224,11 @@ class _ScrumBoard extends State<ScrumBoard> {
                   controller: textController,
                   decoration: const InputDecoration(
                     hintText: 'Add a card',
+                    hintStyle: TextStyle(
+                        color: Color(0xFF00A82D),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Montserrat'),
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                     border: InputBorder.none,
                   ),
@@ -226,6 +244,8 @@ class _ScrumBoard extends State<ScrumBoard> {
                   }
                 },
                 icon: const Icon(Icons.add),
+                iconSize: 24,
+                color: const Color(0xFF00A82D),
               )
             ],
           ),
@@ -243,9 +263,9 @@ class _ScrumBoard extends State<ScrumBoard> {
     return DragAndDropItem(
       child: Container(
         height: 50,
-        margin: const EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(6.0),
         decoration: const BoxDecoration(
-          color: Color(0xFF483838),
+          color: Color.fromARGB(255, 45, 45, 45),
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
           boxShadow: <BoxShadow>[
             BoxShadow(
@@ -259,9 +279,12 @@ class _ScrumBoard extends State<ScrumBoard> {
         child: Center(
           child: Text(
             item,
+            textAlign: TextAlign.left,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 20.0,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'Montserrat',
             ),
           ),
         ),
