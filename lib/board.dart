@@ -175,7 +175,8 @@ class _ScrumBoard extends State<ScrumBoard> {
           ),
           body: isLoading
               ? const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                      color: Color.fromARGB(255, 255, 255, 255)),
                 )
               : DragAndDropLists(
                   children: List.generate(
