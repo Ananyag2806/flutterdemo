@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'board.dart';
-// import 'del.dart';
 
 void main() => runApp(const HomePage());
 
