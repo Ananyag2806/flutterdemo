@@ -15,7 +15,6 @@ class InnerList {
   InnerList({required this.name, required this.children});
 }
 
-List archiveTb = [];
 List storiesTb = [];
 List tasksTb = [];
 List todayTb = [];
@@ -23,21 +22,20 @@ List inProgTb = [];
 List doneTb = [];
 bool isLoading = true;
 
-List<List> tables = [archiveTb, storiesTb, tasksTb, todayTb, inProgTb, doneTb];
+List<List> tables = [storiesTb, tasksTb, todayTb, inProgTb, doneTb];
+bool _isDraggedOver = false;
 
 class _ScrumBoard extends State<ScrumBoard> {
   late List<InnerList> _lists;
 
   void refreshJournals() async {
     print('refreshing');
-    final archive = await SQLHelper.getArchive();
     final stories = await SQLHelper.getStories();
     final tasks = await SQLHelper.getTasks();
     final today = await SQLHelper.getToday();
     final inProg = await SQLHelper.getInProg();
     final done = await SQLHelper.getDone();
 
-    final tempArchive = archive.map((item) => item.values.toList()).toList();
     final tempStories = stories.map((item) => item.values.toList()).toList();
     final tempTasks = tasks.map((item) => item.values.toList()).toList();
     final tempToday = today.map((item) => item.values.toList()).toList();
@@ -45,18 +43,16 @@ class _ScrumBoard extends State<ScrumBoard> {
     final tempDone = done.map((item) => item.values.toList()).toList();
 
     setState(() {
-      archiveTb = tempArchive;
       storiesTb = tempStories;
       tasksTb = tempTasks;
       todayTb = tempToday;
       inProgTb = tempInProg;
       doneTb = tempDone;
-      tables[0] = archiveTb;
-      tables[1] = storiesTb;
-      tables[2] = tasksTb;
-      tables[3] = todayTb;
-      tables[4] = inProgTb;
-      tables[5] = doneTb;
+      tables[0] = storiesTb;
+      tables[1] = tasksTb;
+      tables[2] = todayTb;
+      tables[3] = inProgTb;
+      tables[4] = doneTb;
       isLoading = false;
     });
     print(storiesTb); // prints the first title
@@ -64,14 +60,7 @@ class _ScrumBoard extends State<ScrumBoard> {
     print(tables[0]);
     // print(storiesTb.length);
 
-    List<String> headers = [
-      'Archive',
-      'Stories',
-      'Tasks',
-      'Today',
-      'In Progress',
-      'Done'
-    ];
+    List<String> headers = ['Stories', 'Tasks', 'Today', 'In Progress', 'Done'];
 
     _lists = List.generate(headers.length, (outerIndex) {
       return InnerList(
@@ -108,30 +97,25 @@ class _ScrumBoard extends State<ScrumBoard> {
 
     temp = _lists[0].children;
     print(temp);
-    await SQLHelper.emptyTable('archive');
-    print(await SQLHelper.addItems('archive', temp));
-
-    temp = _lists[1].children;
-    print(temp);
     await SQLHelper.emptyTable('stories');
     print(await SQLHelper.addItems('stories', temp));
 
-    temp = _lists[2].children;
+    temp = _lists[1].children;
     print(temp);
     await SQLHelper.emptyTable('tasks');
     print(await SQLHelper.addItems('tasks', temp));
 
-    temp = _lists[3].children;
+    temp = _lists[2].children;
     print(temp);
     await SQLHelper.emptyTable('today');
     print(await SQLHelper.addItems('today', temp));
 
-    temp = _lists[4].children;
+    temp = _lists[3].children;
     print(temp);
     await SQLHelper.emptyTable('inProg');
     print(await SQLHelper.addItems('inProg', temp));
 
-    temp = _lists[5].children;
+    temp = _lists[4].children;
     print(temp);
     await SQLHelper.emptyTable('done');
     print(await SQLHelper.addItems('done', temp));
@@ -149,57 +133,66 @@ class _ScrumBoard extends State<ScrumBoard> {
         onWillPop: _onWillPop,
         child: MaterialApp(
             home: Scaffold(
-          backgroundColor: const Color(0xFF083906),
-          resizeToAvoidBottomInset: false,
-          appBar: AppBar(
-            backgroundColor: Color(0xFF135f05),
-            title: Row(
-              children: [
-                const Text(
-                  'Scrum Board',
-                  style: TextStyle(
-                    color: Color(0xFFFFFFFF),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                Container(
-                    alignment: Alignment.centerRight,
-                    child: const Icon(
-                      Icons.show_chart,
-                      color: Color(0xFFFFFFFF),
-                    ))
-              ],
-            ),
-          ),
-          body: isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : DragAndDropLists(
-                  children: List.generate(
-                      _lists.length, (index) => _buildList(index)),
-                  onItemReorder: _onItemReorder,
-                  onListReorder: _onListReorder,
-                  axis: Axis.horizontal,
-                  listWidth: 330,
-                  listDraggingWidth: 330,
-                  listDecoration: const BoxDecoration(
-                    color: Color(0xFF212121),
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: Colors.black45,
-                        spreadRadius: 3.0,
-                        blurRadius: 6.0,
-                        offset: Offset(2, 3),
+                backgroundColor: const Color(0xFF083906),
+                resizeToAvoidBottomInset: false,
+                appBar: AppBar(
+                  backgroundColor: Color(0xFF135f05),
+                  title: Row(
+                    children: [
+                      const Text(
+                        'Scrum Board',
+                        style: TextStyle(
+                          color: Color(0xFFFFFFFF),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
+                      const SizedBox(width: 8.0),
+                      Container(
+                          alignment: Alignment.centerRight,
+                          child: const Icon(
+                            Icons.show_chart,
+                            color: Color(0xFFFFFFFF),
+                          ))
                     ],
                   ),
-                  listPadding: const EdgeInsets.all(8.0),
                 ),
-        )));
+                body: isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : Stack(
+                        children: [
+                          DragAndDropLists(
+                            children: List.generate(
+                                _lists.length, (index) => _buildList(index)),
+                            onItemReorder: _onItemReorder,
+                            onListReorder: _onListReorder,
+                            axis: Axis.horizontal,
+                            listWidth: 330,
+                            listDraggingWidth: 330,
+                            listDecoration: const BoxDecoration(
+                              color: Color(0xFF212121),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(6.0)),
+                              boxShadow: <BoxShadow>[
+                                BoxShadow(
+                                  color: Colors.black45,
+                                  spreadRadius: 3.0,
+                                  blurRadius: 6.0,
+                                  offset: Offset(2, 3),
+                                ),
+                              ],
+                            ),
+                            listPadding: const EdgeInsets.all(8.0),
+                          ),
+                          Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: _buildDeleteZone())
+                        ],
+                      ))));
   }
 
   _buildList(int outerIndex) {
@@ -277,7 +270,8 @@ class _ScrumBoard extends State<ScrumBoard> {
   }
 
   _buildItem(String item) {
-    return DragAndDropItem(
+    return Draggable(
+      data: item, // the data that will be passed when item is dropped
       child: Container(
         height: 50,
         margin: const EdgeInsets.all(6.0),
@@ -306,7 +300,103 @@ class _ScrumBoard extends State<ScrumBoard> {
           ),
         ),
       ),
+      feedback: Container(
+        // the widget that will be displayed when item is being dragged
+        height: 50,
+        margin: const EdgeInsets.all(6.0),
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(255, 45, 45, 45),
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black45,
+              spreadRadius: 3.0,
+              blurRadius: 6.0,
+              offset: Offset(2, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            item,
+            textAlign: TextAlign.left,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20.0,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+        ),
+      ),
+      childWhenDragging: Container(
+        // the widget that will be displayed when item is being dragged over the target
+        height: 50,
+        margin: const EdgeInsets.all(6.0),
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(255, 45, 45, 45),
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black45,
+              spreadRadius: 3.0,
+              blurRadius: 6.0,
+              offset: Offset(2, 3),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  _buildDeleteZone() {
+    return DragTarget(
+      onWillAccept: (data) {
+        // return true if the data being dragged is accepted
+        print('onWillAccept called');
+        return data == "accepted_data";
+      },
+      onAccept: (data) {
+        // execute your function here when the data is accepted
+        print('onAccept called');
+        executeFunction();
+      },
+      onLeave: (data) {
+        // called when the draggable item is dragged away from the target
+        print('onLeave called');
+        setState(() {
+          _isDraggedOver = false;
+        });
+      },
+      onMove: (details) {
+        // called when the draggable item is being dragged over the target
+        print('onMove called');
+        setState(() {
+          _isDraggedOver = true;
+        });
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          width: 100,
+          height: 100,
+          color: _isDraggedOver ? Colors.green : Colors.blue,
+          child: Center(
+            child: Text(
+              "Drop here",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void executeFunction() {
+    // your function code here
+    print('execute function');
   }
 
   _onItemReorder(
@@ -324,8 +414,3 @@ class _ScrumBoard extends State<ScrumBoard> {
     });
   }
 }
-
-// black list color : 0xFF483838
-// text color :
-// green background color:
-// green app bar color

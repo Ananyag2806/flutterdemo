@@ -1,131 +1,91 @@
+import 'package:drag_and_drop_lists/drag_and_drop_list_interface.dart';
 import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 import 'package:flutter/material.dart';
 
-class ScrumBoard extends StatefulWidget {
-  const ScrumBoard({Key? key}) : super(key: key);
+class DragIntoListExample extends StatefulWidget {
+  const DragIntoListExample({Key? key}) : super(key: key);
 
   @override
-  State createState() => _ScrumBoard();
+  State createState() => _DragIntoListExample();
 }
 
-class InnerList {
-  final String name;
-  List<String> children;
-  InnerList({required this.name, required this.children});
-}
-
-class _ScrumBoard extends State<ScrumBoard> {
-  late List<InnerList> _lists;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _lists = List.generate(9, (outerIndex) {
-      return InnerList(
-        name: outerIndex.toString(),
-        children: List.generate(12, (innerIndex) => '$outerIndex.$innerIndex'),
-      );
-    });
-  }
+class _DragIntoListExample extends State<DragIntoListExample> {
+  final List<DragAndDropList> _contents = <DragAndDropList>[];
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Scrum4Everyday'),
-          backgroundColor: Colors.green,
-        ),
-        body: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _lists.length,
-          itemBuilder: (BuildContext context, int index) {
-            return _buildList(index);
-          },
-        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Drag Into List'),
       ),
-    );
-  }
-
-  _buildList(int outerIndex) {
-    var innerList = _lists[outerIndex];
-    return DragAndDropList(
-      children: List.generate(innerList.children.length,
-          (index) => _buildItem(innerList.children[index])),
-      footer: Container(
-        height: 50,
-        margin: const EdgeInsets.all(8.0),
-        decoration: const BoxDecoration(
-          color: Color(0xFF483838),
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black45,
-              spreadRadius: 3.0,
-              blurRadius: 6.0,
-              offset: Offset(2, 3),
-            ),
-          ],
-        ),
-        child: const Center(
-          child: TextButton(
-            onPressed: null,
-            child: Text(
-              'Add Task',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20.0,
+      body: Column(
+        children: <Widget>[
+          Flexible(
+            flex: 10,
+            child: DragAndDropLists(
+              children: _contents,
+              onItemReorder: _onItemReorder,
+              onListReorder: _onListReorder,
+              onItemAdd: _onItemAdd,
+              onListAdd: _onListAdd,
+              listGhost: const SizedBox(
+                height: 50,
+                width: 100,
+                child: Center(
+                  child: Icon(Icons.add),
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  _buildItem(String item) {
-    return DragAndDropItem(
-      child: Container(
-        height: 50,
-        margin: const EdgeInsets.all(8.0),
-        decoration: const BoxDecoration(
-          color: Color(0xFF483838),
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black45,
-              spreadRadius: 3.0,
-              blurRadius: 6.0,
-              offset: Offset(2, 3),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            item,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20.0,
+          Flexible(
+            flex: 1,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    color: Colors.pink,
+                    child: Center(
+                      child: Draggable<DragAndDropListInterface>(
+                        feedback: const Icon(Icons.assignment),
+                        data: DragAndDropList(
+                          header: const Text(
+                            'New default list',
+                          ),
+                          children: <DragAndDropItem>[],
+                        ),
+                        child: const Icon(Icons.assignment),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    color: Colors.orange,
+                    child: Center(
+                      child: Draggable<DragAndDropItem>(
+                        feedback: const Icon(Icons.photo),
+                        data: DragAndDropItem(
+                            child: const Text('New default item')),
+                        child: const Icon(Icons.photo),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   _onItemReorder(
-      int oldItemIndex, int oldListIndex, int newItemIndex, int newListIndex) {
-    setState(() {
-      var movedItem = _lists[oldListIndex].children.removeAt(oldItemIndex);
-      _lists[newListIndex].children.insert(newItemIndex, movedItem);
-    });
-  }
+      int oldItemIndex, int oldListIndex, int newItemIndex, int newListIndex) {}
 
-  _onListReorder(int oldListIndex, int newListIndex) {
-    setState(() {
-      var movedList = _lists.removeAt(oldListIndex);
-      _lists.insert(newListIndex, movedList);
-    });
-  }
+  _onListReorder(int oldListIndex, int newListIndex) {}
+
+  _onItemAdd(DragAndDropItem newItem, int listIndex, int itemIndex) {}
+
+  _onListAdd(DragAndDropListInterface newList, int listIndex) {}
 }

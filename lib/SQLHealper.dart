@@ -5,6 +5,12 @@ import 'package:sqflite/sqflite.dart' as sql;
 
 class SQLHelper {
   static Future<void> createTables(sql.Database database) async {
+    await database.execute("""CREATE TABLE archive(
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        title TEXT,
+        createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+      """);
     await database.execute("""CREATE TABLE stories(
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         title TEXT,
@@ -42,7 +48,7 @@ class SQLHelper {
 
   static Future<sql.Database> db() async {
     return sql.openDatabase(
-      'scrum.db',
+      'scrumBoard.db',
       version: 1,
       onCreate: (sql.Database database, int version) async {
         await createTables(database);
@@ -82,6 +88,11 @@ class SQLHelper {
   }
 
   // Read all items from respective tables
+  static Future<List<Map<String, dynamic>>> getArchive() async {
+    final db = await SQLHelper.db();
+    return db.query('archive', orderBy: "id");
+  }
+
   static Future<List<Map<String, dynamic>>> getStories() async {
     final db = await SQLHelper.db();
     return db.query('stories', orderBy: "id");

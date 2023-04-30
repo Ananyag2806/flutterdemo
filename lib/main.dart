@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'board.dart';
-import 'insights.dart';
-import 'profile.dart';
+// import 'del.dart';
 
 void main() => runApp(const HomePage());
 
